@@ -1,0 +1,6 @@
+# Alternative requirements for Streamlit Cloud deployment
+streamlit
+tensorflow-cpu  # CPU version is lighter and more compatible
+numpy
+pillow
+pandas
