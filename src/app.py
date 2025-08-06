@@ -74,6 +74,18 @@ class FoodClassifierApp:
             script_dir = os.path.dirname(os.path.abspath(__file__))
             project_root = os.path.dirname(script_dir)
             
+            # Debug info for deployment
+            st.write(f"🔍 Debug info:")
+            st.write(f"Script dir: {script_dir}")
+            st.write(f"Project root: {project_root}")
+            
+            # Check what's available
+            if os.path.exists(os.path.join(project_root, 'notebook')):
+                notebook_files = os.listdir(os.path.join(project_root, 'notebook'))
+                st.write(f"Notebook files: {notebook_files}")
+            else:
+                st.error("Notebook directory not found!")
+            
             # Try different model files in order of preference
             model_files = [
                 'converted_model.keras',      # Our converted model (highest priority)
@@ -107,7 +119,11 @@ class FoodClassifierApp:
             # Load class names
             classes_path = os.path.join(project_root, 'data', 'meta', 'classes.txt')
             if not os.path.exists(classes_path):
-                return None, []
+                # Try alternative path for cloud deployment (data folder might be ignored)
+                classes_path = os.path.join(script_dir, 'classes.txt')
+                if not os.path.exists(classes_path):
+                    st.error(f"Classes file not found in any location")
+                    return None, []
                 
             class_names = get_data_list(classes_path)
             
@@ -158,6 +174,11 @@ class FoodClassifierApp:
             self.model, self.class_names = self.load_model_and_classes()
         
         if self.model is None:
+            st.error("Model failed to load. Cannot make predictions.")
+            return None
+        
+        if not self.class_names:
+            st.error("Class names failed to load. Cannot make predictions.")
             return None
         
         # Preprocess the image
