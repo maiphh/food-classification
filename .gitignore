@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Data folders (large datasets)
+data/
+dataset/
+datasets/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+temp/
+tmp/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Model files (if too large for GitHub)
+# Uncomment these lines if your model files are over 100MB
+# *.h5
+# *.keras
+# *.pkl
+# *.joblib
+
+# Environment variables
+.env
+
+# Large files
+*.zip
+*.tar.gz
+*.rar
+
+# Training outputs
+logs/
+checkpoints/
+runs/
