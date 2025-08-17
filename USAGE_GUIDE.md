@@ -35,6 +35,7 @@ The original model compatibility issue has been resolved by converting the model
 
 ### Web Interface
 - **Drag & drop image upload** (JPG, JPEG, PNG)
+- **Paste image from clipboard**
 - **Real-time predictions** with confidence scores
 - **Top-K predictions** (adjustable 1-10)
 - **Visual confidence bars** for top 3 predictions
