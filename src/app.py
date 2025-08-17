@@ -26,6 +26,15 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from util import get_data_list  # noqa: E402
 
 
+def image_from_data_url(data_url: str) -> Optional[Image.Image]:
+    """Decode a base64 data URL into a PIL Image."""
+    try:
+        header, encoded = data_url.split(",", 1)
+        return Image.open(BytesIO(base64.b64decode(encoded)))
+    except Exception:  # noqa: BLE001 - invalid data URL
+        return None
+
+
 def load_model_robust(model_path: str) -> Optional[tf.keras.Model]:
     """Attempt to load a model using multiple fallback strategies.
 
@@ -187,11 +196,12 @@ def main() -> None:
         st.markdown("**Or paste from clipboard**")
         pasted_image_data = components.html(
             """
-            <div id='paste-area' style='border:2px dashed #ccc; border-radius:8px; padding:20px; text-align:center;'>
+            <div id='paste-area' contenteditable='true' style='border:2px dashed #ccc; border-radius:8px; padding:20px; text-align:center;'>
                 Click here and press Ctrl+V to paste an image
             </div>
             <script>
             const pasteArea = document.getElementById('paste-area');
+            pasteArea.addEventListener('click', () => pasteArea.focus());
             pasteArea.addEventListener('paste', function(event) {
                 const items = (event.clipboardData || event.originalEvent.clipboardData).items;
                 for (const item of items) {
@@ -211,6 +221,10 @@ def main() -> None:
             """,
             height=150,
         )
+        if pasted_image_data is not None:
+            st.session_state["pasted_image_data"] = pasted_image_data
+        elif "pasted_image_data" in st.session_state:
+            pasted_image_data = st.session_state["pasted_image_data"]
         top_k = st.slider(
             "Number of predictions to show:",
             min_value=1,
@@ -225,11 +239,7 @@ def main() -> None:
         if uploaded_file is not None:
             image = Image.open(uploaded_file)
         elif pasted_image_data:
-            try:
-                header, encoded = pasted_image_data.split(",", 1)
-                image = Image.open(BytesIO(base64.b64decode(encoded)))
-            except Exception:
-                image = None
+            image = image_from_data_url(pasted_image_data)
 
         if image is not None:
             try:

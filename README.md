@@ -9,7 +9,7 @@ Upload food images and get AI-powered predictions for 101 different food categor
 
 ## 📱 Features
 - 📸 Upload any food image
-- 📋 Paste image from clipboard
+- 📋 Paste image from clipboard (click the dashed area then press Ctrl+V)
 - 🤖 AI classification with confidence scores
 - 📊 Top predictions visualization
 - 🎨 Beautiful, responsive interface
