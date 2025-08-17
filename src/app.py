@@ -210,7 +210,6 @@ def main() -> None:
             </script>
             """,
             height=150,
-            key="paste_component",
         )
         top_k = st.slider(
             "Number of predictions to show:",
