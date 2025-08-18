@@ -14,3 +14,8 @@ def test_image_from_data_url():
     decoded = image_from_data_url(data_url)
     assert decoded is not None
     assert decoded.size == (5, 5)
+
+
+def test_image_from_data_url_invalid_returns_none():
+    assert image_from_data_url("invalid") is None
+    assert image_from_data_url(None) is None  # type: ignore[arg-type]

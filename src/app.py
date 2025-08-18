@@ -194,7 +194,7 @@ def main() -> None:
             help="Upload a clear image of food for best results",
         )
         st.markdown("**Or paste from clipboard**")
-        pasted_image_data = components.html(
+        raw_pasted_data = components.html(
             """
             <div id='paste-area' contenteditable='true' style='border:2px dashed #ccc; border-radius:8px; padding:20px; text-align:center;'>
                 Click here and press Ctrl+V to paste an image
@@ -221,10 +221,9 @@ def main() -> None:
             """,
             height=150,
         )
-        if pasted_image_data is not None:
-            st.session_state["pasted_image_data"] = pasted_image_data
-        elif "pasted_image_data" in st.session_state:
-            pasted_image_data = st.session_state["pasted_image_data"]
+        if isinstance(raw_pasted_data, str) and raw_pasted_data:
+            st.session_state["pasted_image_data"] = raw_pasted_data
+        pasted_image_data = st.session_state.get("pasted_image_data")
         top_k = st.slider(
             "Number of predictions to show:",
             min_value=1,
@@ -238,7 +237,7 @@ def main() -> None:
         image = None
         if uploaded_file is not None:
             image = Image.open(uploaded_file)
-        elif pasted_image_data:
+        elif isinstance(pasted_image_data, str):
             image = image_from_data_url(pasted_image_data)
 
         if image is not None:
