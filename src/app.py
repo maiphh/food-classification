@@ -16,11 +16,23 @@ import pandas as pd
 import streamlit as st
 import tensorflow as tf
 from PIL import Image
+import base64
+from io import BytesIO
+import streamlit.components.v1 as components
 
 # Add the src directory to Python path to import custom modules
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from util import get_data_list  # noqa: E402
+
+
+def image_from_data_url(data_url: str) -> Optional[Image.Image]:
+    """Decode a base64 data URL into a PIL Image."""
+    try:
+        header, encoded = data_url.split(",", 1)
+        return Image.open(BytesIO(base64.b64decode(encoded)))
+    except Exception:  # noqa: BLE001 - invalid data URL
+        return None
 
 
 def load_model_robust(model_path: str) -> Optional[tf.keras.Model]:
@@ -152,7 +164,7 @@ def main() -> None:
     st.sidebar.title("📋 Instructions")
     st.sidebar.markdown(
         """
-        1. Upload a food image using the file uploader
+        1. Upload or paste a food image
         2. The app will automatically predict the food type
         3. View the top predictions with confidence scores
         4. Try different food images to test the model!
@@ -173,6 +185,7 @@ def main() -> None:
 
     col1, col2 = st.columns([1, 1])
 
+    pasted_image_data = None
     with col1:
         st.subheader("📤 Upload Food Image")
         uploaded_file = st.file_uploader(
@@ -180,6 +193,37 @@ def main() -> None:
             type=["jpg", "jpeg", "png"],
             help="Upload a clear image of food for best results",
         )
+        st.markdown("**Or paste from clipboard**")
+        raw_pasted_data = components.html(
+            """
+            <div id='paste-area' contenteditable='true' style='border:2px dashed #ccc; border-radius:8px; padding:20px; text-align:center;'>
+                Click here and press Ctrl+V to paste an image
+            </div>
+            <script>
+            const pasteArea = document.getElementById('paste-area');
+            pasteArea.addEventListener('click', () => pasteArea.focus());
+            pasteArea.addEventListener('paste', function(event) {
+                const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+                for (const item of items) {
+                    if (item.type.indexOf('image') !== -1) {
+                        const file = item.getAsFile();
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const dataUrl = e.target.result;
+                            window.parent.postMessage({isStreamlitMessage: true, type: 'streamlit:setComponentValue', value: dataUrl}, '*');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                }
+                event.preventDefault();
+            });
+            </script>
+            """,
+            height=150,
+        )
+        if isinstance(raw_pasted_data, str) and raw_pasted_data:
+            st.session_state["pasted_image_data"] = raw_pasted_data
+        pasted_image_data = st.session_state.get("pasted_image_data")
         top_k = st.slider(
             "Number of predictions to show:",
             min_value=1,
@@ -190,9 +234,14 @@ def main() -> None:
 
     with col2:
         st.subheader("🔍 Predictions")
+        image = None
         if uploaded_file is not None:
+            image = Image.open(uploaded_file)
+        elif isinstance(pasted_image_data, str):
+            image = image_from_data_url(pasted_image_data)
+
+        if image is not None:
             try:
-                image = Image.open(uploaded_file)
                 # Center and scale the uploaded image preview so it appears smaller
                 img_left, img_center, img_right = st.columns([1, 2, 1])
                 with img_center:
